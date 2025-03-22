@@ -176,13 +176,14 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="actionModalLabel">Connecting..</h1>
+                    <h1 class="modal-title fs-5" id="actionModalLabel">Waking up the Chungus</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-center">
+                    <p class="text-center mb-0">
                         <img src="img/oia-uia.gif" alt="uiia" id="progress">
                     </p>
+                    <p class="text-center mt-0" id="status"></p>
                 </div>
             </div>
         </div>
@@ -246,12 +247,50 @@
             }
         }
 
+        function setStatusColor(stat, color) {
+            let status = getId("status");
+            status.innerHTML = status.innerHTML + `<br><span style="color:${color}">` + stat + "</span>";
+        }
+
+        function setStatus(stat) {
+            setStatusColor(stat, "#fff");
+        }
+
+        function hideProgress() {
+            getId("progress").setAttribute("style", "display:none");
+        }
+
+        function showProgress() {
+            getId("progress").removeAttribute("style");
+        }
+
         function interpretResponse(q, ans) {
+            console.log("ans=", ans);
             switch (q) {
                 case 10: {
+                    let isUp = Number.parseInt(ans) == 1;
+                    setStatus("chungus is " + (isUp ? "UP" : "DOWN"));
+                    if (isUp) {
+                        hideProgress();
+                        setStatusColor("The PC is up on the net. Try parsecing!", "green");
+                    } else {
+                        setStatus("waking up the chungus..");
+                        sendRequest(11);
+                    }
                     break;
                 }
                 case 11: {
+                    let wolSent = Number.parseInt(ans) == 1;
+                    setStatus("Magic Packet has been" + (wolSent ? " " : " NOT ") + "sent.");
+                    if (wolSent) {
+                        setStatus("Waiting 15 seconds for the PC to boot..");
+                        setTimeout(function () {
+                            setStatus("Checking if the PC is up..");
+                            sendRequest(10);
+                        }, 15000);
+                    } else {
+                        setStatus("Send failed. Contact your donkey admin!");
+                    }
                     break;
                 }
                 default: {
@@ -261,33 +300,44 @@
         }
 
         function interpretError(q, ans) {
-            getId("progress").classList.add("hidden");
+
+            setStatusColor("error: " + ans, "red");
         }
 
-        function sendRequest(user, pass, q) {
+        function sendRequest(q) {
+            let user = getId("user").value;
+            let pass = getId("pass").value;
+
             let xhr = new XMLHttpRequest();
             xhr.open("GET", `api/auth.php?user=${user}&pass=${pass}&q=${q}`, true);
             xhr.onreadystatechange = function () {
+                if (this.readyState == 3) {
+                    setStatus("reading reply..");
+                }
                 if (this.readyState == 4 && this.status == 200) {
                     let ans = xhr.responseText;
                     if (ans.includes("<out>")) {
-                        interpretResponse(q, ans);
-                    }
-                    else if (ans.includes("<err>")) {
-                        interpretError(q, ans);
+                        interpretResponse(q, ans.slice(ans.indexOf("<out>") + 5, ans.indexOf("</out>")));
+                    } else if (ans.includes("<err>")) {
+                        interpretError(q, ans.slice(ans.indexOf("<err>") + 5, ans.indexOf("</err>")));
                     } else {
                         interpretError(q, "server error");
                     }
                 }
             }
             xhr.send();
+            setStatus("request sent.");
         }
 
         function parseForm() {
-            getId("progress").classList.remove("hidden");
+            showProgress();
+            setStatus("requesting..");
             var myModal = new bootstrap.Modal(document.getElementById('actionModal'));
             myModal.show();
-            sendRequest(getId("user").value, getId("pass").value, 10);
+            document.getElementById('actionModal').addEventListener('hidden.bs.modal', function () {
+                getId("status").textContent = "";
+            });
+            sendRequest(10);
         }
 
         function init() {

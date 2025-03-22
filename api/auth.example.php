@@ -31,7 +31,7 @@ function testUp()
 {
     $out = array();
     $addr = "172.16.254.1";
-    exec("ping -n 2 -w 250 $addr", $out);
+    exec("ping -n 4 -w 100 $addr", $out);
     $up = 0;
     foreach ($out as $line) {
         #echo $line . "<br>";
