@@ -30,12 +30,12 @@ if (strcmp(strtolower($pass), "hackme") != 0) {
 function testUp()
 {
     $out = array();
-    exec("ping -n 2 -w 250 172.16.254.1", $out);
-    $up = false;
+    exec("ping -n 2 -w 250 172.31.69.95", $out);
+    $up = 0;
     foreach ($out as $line) {
         echo $line . "<br>";
         if (str_contains($line, "time=")) {
-            $up = true;
+            $up = 1;
             break;
         }
     }
@@ -45,11 +45,11 @@ function testUp()
 function sendPacket()
 {
     $out = array();
-    exec("wol 60a4b7c798a8", $out);
-    $sent = false;
+    exec("wol 50EBF62F842C", $out);
+    $sent = 0;
     foreach ($out as $line) {
         if (str_contains($line, "packet sent successfully")) {
-            $sent = true;
+            $sent = 1;
             break;
         }
     }

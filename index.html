@@ -70,50 +70,53 @@
             background-color: #222;
             border-radius: 8px;
         }
+
+        .th-ptr {
+            cursor: pointer;
+        }
     </style>
 </head>
 
-<body data-bs-theme="dark" class="vh-100 d-flex flex-column justify-content-" onload="init()">
+<body data-bs-theme="dark" class="vh-100 d-flex flex-column justify-content-start" onload="init()">
     <header class="d-flex flex-row justify-content-center mb-5 pt-3 pb-1">
         <div>
-            <h2 class="text-center th-header-top">the gaming chungus</h2>
-            <h4 class="mx-auto th-fit th-header-bot">wake up thingy</h4>
+            <h2 class="th-header-top text-center mb-0">wake that chungus</h2>
+            <h4 class="th-fit th-header-bot mx-auto">make it smash gamus</h4>
         </div>
     </header>
-    <main class="container p-3" style="justify-self: flex-end;">
+    <main class="container p-3 align-self-end">
         <div class="row justify-content-center">
             <div class="col-xs-12">
-                <legend class="text-center text-danger">Authorizzation required :c</legend>
+                <legend class="text-center text-danger">Authorizzation required 🐀</legend>
                 <p class="text-center">I apologize, but I have to make sure its not the <b>kuba</b> guy <br>whom I told
                     that he can shove his <i>hacking tools</i> right up his ass</p>
             </div>
         </div>
         <div class="row justify-content-center">
             <div class="col-xs-12 col-lg-8 col-xl-6">
-                <form action="javascript:void(0)" method="POST" class="th-form p-3">
+                <form action="javascript:void(0)" method="post" class="th-form p-3">
                     <div class="input-group mt-1">
                         <label for="user" class="input-group-text">Your name (yes the 'cutified' one)</label>
-                        <input type="text" id="user" name="user" class="form-control" autofocus oninput="storeField(this.name)">
+                        <input type="text" id="user" class="form-control" autofocus oninput="storeField(this.id)">
                     </div>
                     <div class="input-group mt-1">
-                        <label for="pass" class="input-group-text">Access key</label>
-                        <input type="password" id="pass" name="pass" class="form-control" oninput="storeField(this.name)">
+                        <label for="pass" class="input-group-text">Password (in meow language)</label>
+                        <input type="password" id="pass" class="form-control" oninput="storeField(this.id)">
                         <div class="input-group-append">
-                            <div class="input-group-text">
-                                <input type="checkbox" id="hide" checked onchange="toggleKey()"> <label for="hide">&nbsp;Hide
-                                    characters</label>
-                                </div>
+                            <label class="input-group-text th-ptr">
+                                <input class="th-ptr" type="checkbox" id="hide" checked
+                                    onchange="toggleKey()">&nbsp;Hide </label>
                         </div>
                     </div>
-                    <div class="mt-1 text-center">
-                    </div>
                     <div class="mt-3 text-center">
-                        <input type="submit" class="btn btn-success" value="Boot that Chungus!">
+                        <input type="submit" class="btn btn-success" value="Wake that Chungus!">
                     </div>
                 </form>
             </div>
         </div>
     </main>
+    <footer>
+    </footer>
     <script type="text/javascript">
         function getId(id) {
             return document.getElementById(id);
@@ -149,9 +152,9 @@
             restoreSaved();
         }
 
-        function toggleKey(){
+        function toggleKey() {
             let pass = getId("pass");
-            if(getId("hide").checked) {
+            if (getId("hide").checked) {
                 pass.setAttribute("type", "password");
             } else {
                 pass.setAttribute("type", "text");
