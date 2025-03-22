@@ -10,7 +10,7 @@
     <!-- kuba hasioku spasiony w dupe se tego burpa wsadz! -->
     <link rel="stylesheet" href="lib/bootstrap.min.css">
     <link rel="shortcut icon" href="favicon.ico">
-    <title>netboot ver. b1.0 | emc</title>
+    <title>netboot ver. c1.1 | emc</title>
     <style>
         /* custom bootstrap theme here 'cause who needs sass */
         @keyframes bodybgcolor {
@@ -83,16 +83,20 @@
             cursor: pointer;
         }
 
-        .status-def {
+        .status-log {
             color: #ccc;
         }
 
         .status-red {
             color: #CC0000;
+            font-size: 1.15rem;
+            font-weight: bold;
         }
 
         .status-green {
             color: #44AA00;
+            font-size: 1.15rem;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -146,10 +150,10 @@
                         disabled></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-center mb-0">
+                    <p class="text-center my-0">
                         <img src="img/oia-uia.gif" alt="uiia" id="progress">
                     </p>
-                    <p class="text-center mt-0" id="status"></p>
+                    <p class="text-center my-0" id="status"></p>
                 </div>
             </div>
         </div>
@@ -222,7 +226,7 @@
         }
 
         function setStatus(stat) {
-            setStatusColor(stat, "def");
+            setStatusColor(stat, "log");
         }
 
         function hideProgress() {
@@ -254,9 +258,8 @@
                     setStatus("chungus is " + (isUp ? "UP" : "DOWN"));
                     if (isUp) {
                         hideProgress();
-                        setStatusColor("The PC is up on the net. Try parsecing!", "green");
+                        setStatusColor("The PC is up on the network. Try parsecing!", "green");
                     } else {
-                        setStatus("waking up the chungus..");
                         sendRequest(REQ_WAKE, ++recurrence);
                     }
                     break;
@@ -267,7 +270,6 @@
                     if (wolSent) {
                         setStatus("Waiting 10 seconds for the PC to come online..");
                         setTimeout(function () {
-                            setStatus("Checking if the PC is up..");
                             sendRequest(REQ_PING, recurrence);
                         }, 10000);
                     } else {
@@ -304,7 +306,17 @@
                 }
             }
             xhr.send();
-            setStatus("request sent.");
+            switch (q) {
+                case REQ_PING: {
+                    setStatus("pinging the chungus..");
+                    break;
+                }
+                case REQ_WAKE: {
+                    setStatus("waking up the chungus..");
+                    break;
+                }
+                default: break;
+            }
         }
 
         function parseForm() {

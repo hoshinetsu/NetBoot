@@ -19,11 +19,7 @@ $user = trim($_GET['user']);
 $pass = trim($_GET['pass']);
 $query = intval(trim($_GET['q']));
 
-if (strcmp(strtolower($user), "me") != 0) {
-    error("auth failure");
-}
-
-if (strcmp(strtolower($pass), "hackme") != 0) {
+if (strcmp(strtolower($user), "me") != 0 or strcmp(strtolower($pass), "hackme") != 0) {
     error("auth failure");
 }
 
