@@ -14,8 +14,8 @@
     <style>
         /* custom bootstrap theme here 'cause who needs sass */
         @keyframes bodybgcolor {
-            0% {
-                background-color: 002200;
+            0%{
+                background-color: #002200;
             }
 
             33% {
@@ -36,7 +36,7 @@
             background-image: url('img/bg-tiles.png');
             background-size: cover;
             animation-name: bodybgcolor;
-            animation-duration: 9s;
+            animation-duration: 8s;
             animation-iteration-count: infinite;
             animation-direction: alternate-reverse;
         }
@@ -82,59 +82,14 @@
         .th-ptr {
             cursor: pointer;
         }
-
-        .fadein,
-        .fadeout {
-            animation-name: fade;
-            animation-duration: .5s;
-        }
-
-        .fadeout {
-            animation-direction: normal;
-        }
-
-        .fadein {
-            animation-direction: reverse;
-        }
-
-        @keyframes fade {
-            0% {
-                display: block;
-                opacity: 100%;
-            }
-
-            25% {
-                display: block;
-                opacity: 75%;
-            }
-
-            50% {
-                display: block;
-                opacity: 50%;
-            }
-
-            75% {
-                display: block;
-                opacity: 25%;
-            }
-
-            100% {
-                display: block;
-                opacity: 0%;
-            }
-        }
-
-        .hidden {
-            display: none;
-        }
     </style>
 </head>
 
 <body data-bs-theme="dark" class="vh-100 d-flex flex-column justify-content-start" onload="init()">
     <header class="d-flex flex-row justify-content-center mb-5 pt-3 pb-1">
         <div>
-            <h2 class="th-header-top text-center mb-0">wake that chungus</h2>
-            <h4 class="th-fit th-header-bot mx-auto">make it smash gamus</h4>
+            <h2 class="th-header-top text-center mb-0">Wake That Chungus</h2>
+            <h4 class="th-fit th-header-bot mx-auto">like it's 9/11</h4>
         </div>
     </header>
     <main class="container p-3 ">
@@ -149,12 +104,10 @@
             <div class="col-xs-12 col-lg-8 col-xl-6">
                 <div class="fadein">
                     <form action="javascript:parseForm()" method="post" class="th-form p-3">
-                        <div class="input-group mt-1">
-                            <label for="user" class="input-group-text">Your name (yes the 'cutified' one)</label>
-                            <input type="text" required id="user" class="form-control" autofocus oninput="storeField()">
-                        </div>
-                        <div class="input-group mt-1">
-                            <label for="pass" class="input-group-text">Password (in meow language)</label>
+                        <label for="user">Your name (yes the 'cutified' one)</label>
+                        <input type="text" required id="user" class="form-control" autofocus oninput="storeField()">
+                        <label class="mt-2" for="pass">Password (in meow language)</label>
+                        <div class="input-group">
                             <input type="password" required id="pass" class="form-control" oninput="storeField()">
                             <div class="input-group-append">
                                 <label class="input-group-text th-ptr">
@@ -177,7 +130,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="actionModalLabel">Waking up the Chungus</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" id="actionModalClose"
+                        disabled></button>
                 </div>
                 <div class="modal-body">
                     <p class="text-center mb-0">
@@ -247,9 +201,12 @@
             }
         }
 
+        const REQ_PING = 10;
+        const REQ_WAKE = 11;
+
         function setStatusColor(stat, color) {
             let status = getId("status");
-            status.innerHTML = status.innerHTML + `<br><span style="color:${color}">` + stat + "</span>";
+            status.innerHTML = status.innerHTML + `<span style="color:${color}">` + stat + "</span><br>";
         }
 
         function setStatus(stat) {
@@ -258,16 +215,29 @@
 
         function hideProgress() {
             getId("progress").setAttribute("style", "display:none");
+            getId("actionModalClose").removeAttribute("disabled");
         }
 
         function showProgress() {
+            getId("status").textContent = "";
             getId("progress").removeAttribute("style");
+            getId("actionModalClose").setAttribute("disabled", "da");
         }
 
-        function interpretResponse(q, ans) {
-            console.log("ans=", ans);
+        function interpretError(q, ans) {
+            hideProgress();
+            setStatusColor("error: " + ans, "red");
+        }
+
+        function interpretResponse(q, ans, recurrence) {
+            console.log("Recurrence depth: ", recurrence);
+            if (recurrence > 5) {
+                setStatus("Abortion!");
+                interpretError(0, "too many failed attempts");
+                return;
+            }
             switch (q) {
-                case 10: {
+                case REQ_PING: {
                     let isUp = Number.parseInt(ans) == 1;
                     setStatus("chungus is " + (isUp ? "UP" : "DOWN"));
                     if (isUp) {
@@ -275,19 +245,19 @@
                         setStatusColor("The PC is up on the net. Try parsecing!", "green");
                     } else {
                         setStatus("waking up the chungus..");
-                        sendRequest(11);
+                        sendRequest(REQ_WAKE, ++recurrence);
                     }
                     break;
                 }
-                case 11: {
+                case REQ_WAKE: {
                     let wolSent = Number.parseInt(ans) == 1;
                     setStatus("Magic Packet has been" + (wolSent ? " " : " NOT ") + "sent.");
                     if (wolSent) {
-                        setStatus("Waiting 15 seconds for the PC to boot..");
+                        setStatus("Waiting 10 seconds for the PC to come online..");
                         setTimeout(function () {
                             setStatus("Checking if the PC is up..");
-                            sendRequest(10);
-                        }, 15000);
+                            sendRequest(REQ_PING, recurrence);
+                        }, 10000);
                     } else {
                         setStatus("Send failed. Contact your donkey admin!");
                     }
@@ -299,25 +269,21 @@
             }
         }
 
-        function interpretError(q, ans) {
-
-            setStatusColor("error: " + ans, "red");
-        }
-
-        function sendRequest(q) {
+        function sendRequest(q, recurrence = 0) {
             let user = getId("user").value;
             let pass = getId("pass").value;
 
             let xhr = new XMLHttpRequest();
             xhr.open("GET", `api/auth.php?user=${user}&pass=${pass}&q=${q}`, true);
             xhr.onreadystatechange = function () {
-                if (this.readyState == 3) {
-                    setStatus("reading reply..");
-                }
-                if (this.readyState == 4 && this.status == 200) {
+                if (this.readyState == 4) {
+                    if (this.status != 200) {
+                        interpretError(q, "");
+                        return;
+                    }
                     let ans = xhr.responseText;
                     if (ans.includes("<out>")) {
-                        interpretResponse(q, ans.slice(ans.indexOf("<out>") + 5, ans.indexOf("</out>")));
+                        interpretResponse(q, ans.slice(ans.indexOf("<out>") + 5, ans.indexOf("</out>")), recurrence);
                     } else if (ans.includes("<err>")) {
                         interpretError(q, ans.slice(ans.indexOf("<err>") + 5, ans.indexOf("</err>")));
                     } else {
@@ -331,13 +297,9 @@
 
         function parseForm() {
             showProgress();
-            setStatus("requesting..");
             var myModal = new bootstrap.Modal(document.getElementById('actionModal'));
             myModal.show();
-            document.getElementById('actionModal').addEventListener('hidden.bs.modal', function () {
-                getId("status").textContent = "";
-            });
-            sendRequest(10);
+            sendRequest(REQ_PING);
         }
 
         function init() {
