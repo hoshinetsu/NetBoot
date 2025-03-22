@@ -14,16 +14,19 @@
     <style>
         /* custom bootstrap theme here 'cause who needs sass */
         @keyframes bodybgcolor {
-            0%{
-                background-color:002200;
+            0% {
+                background-color: 002200;
             }
-            33%{
+
+            33% {
                 background-color: #003300;
             }
-            66%{
+
+            66% {
                 background-color: #004400;
             }
-            100%{
+
+            100% {
                 background-color: #005500;
             }
         }
@@ -41,7 +44,7 @@
         header {
             background-color: #111;
             border-bottom: 2px solid #005500;
-            color:#007700;
+            color: #44AA00;
         }
 
         main {
@@ -49,18 +52,23 @@
             background-color: #111;
         }
 
-        .th-header-top{
+        .th-header-top {
             font-family: Georgia, 'Times New Roman', Times, serif;
         }
 
-        .th-header-bot{
-            font-family:'Courier New', Courier, monospace;
+        .th-header-bot {
+            font-family: 'Courier New', Courier, monospace;
             letter-spacing: 2px;
             text-indent: 2px;
         }
 
         .th-fit {
             width: fit-content;
+        }
+
+        .th-form {
+            background-color: #222;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -73,21 +81,35 @@
         </div>
     </header>
     <main class="container p-3" style="justify-self: flex-end;">
-        <div class="row">
-            <div class="col">
-                <form action="javascript:void(0)" method="POST">
-                    <fieldset>
-                        <legend class="text-center">Authorizzation required :c</legend>
-                        <p>i apologize about this, but i have to make sure its not that <b>kuba</b> guy whom i told he
-                            can shove his <i>hacking tools</i> right up his ass</p>
-                        <label for="user">Your name (yes the 'cutified' one): </label>
-                        <input type="text" id="user" name="user">
-                    </fieldset>
-                    <fieldset class="mt-3">
-                        <input type="reset" class="btn btn-secondary" value="Clear">
+        <div class="row justify-content-center">
+            <div class="col-xs-12">
+                <legend class="text-center text-danger">Authorizzation required :c</legend>
+                <p class="text-center">I apologize, but I have to make sure its not the <b>kuba</b> guy <br>whom I told
+                    that he can shove his <i>hacking tools</i> right up his ass</p>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-xs-12 col-lg-8 col-xl-6">
+                <form action="javascript:void(0)" method="POST" class="th-form p-3">
+                    <div class="input-group mt-1">
+                        <label for="user" class="input-group-text">Your name (yes the 'cutified' one)</label>
+                        <input type="text" id="user" name="user" class="form-control" autofocus oninput="storeField(this.name)">
+                    </div>
+                    <div class="input-group mt-1">
+                        <label for="pass" class="input-group-text">Access key</label>
+                        <input type="password" id="pass" name="pass" class="form-control" oninput="storeField(this.name)">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <input type="checkbox" id="hide" checked onchange="toggleKey()"> <label for="hide">&nbsp;Hide
+                                    characters</label>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="mt-1 text-center">
+                    </div>
+                    <div class="mt-3 text-center">
                         <input type="submit" class="btn btn-success" value="Boot that Chungus!">
-                        
-                    </fieldset>
+                    </div>
                 </form>
             </div>
         </div>
@@ -118,11 +140,22 @@
         }
 
         function restoreSaved() {
-            restoreField("name");
+            restoreField("user");
+            restoreField("pass");
         }
 
         function init() {
             console.log("finished loading.");
+            restoreSaved();
+        }
+
+        function toggleKey(){
+            let pass = getId("pass");
+            if(getId("hide").checked) {
+                pass.setAttribute("type", "password");
+            } else {
+                pass.setAttribute("type", "text");
+            }
         }
     </script>
 </body>
