@@ -14,7 +14,7 @@
     <style>
         /* custom bootstrap theme here 'cause who needs sass */
         @keyframes bodybgcolor {
-            0%{
+            0% {
                 background-color: #002200;
             }
 
@@ -81,6 +81,18 @@
 
         .th-ptr {
             cursor: pointer;
+        }
+
+        .status-def {
+            color: #ccc;
+        }
+
+        .status-red {
+            color: #CC0000;
+        }
+
+        .status-green {
+            color: #44AA00;
         }
     </style>
 </head>
@@ -206,11 +218,11 @@
 
         function setStatusColor(stat, color) {
             let status = getId("status");
-            status.innerHTML = status.innerHTML + `<span style="color:${color}">` + stat + "</span><br>";
+            status.innerHTML = status.innerHTML + `<span class="status-${color}">` + stat + "</span><br>";
         }
 
         function setStatus(stat) {
-            setStatusColor(stat, "#fff");
+            setStatusColor(stat, "def");
         }
 
         function hideProgress() {
