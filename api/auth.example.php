@@ -30,11 +30,12 @@ if (strcmp(strtolower($pass), "hackme") != 0) {
 function testUp()
 {
     $out = array();
-    exec("ping -n 2 -w 250 172.31.69.95", $out);
+    $addr = "172.16.254.1";
+    exec("ping -n 2 -w 250 $addr", $out);
     $up = 0;
     foreach ($out as $line) {
-        echo $line . "<br>";
-        if (str_contains($line, "time=")) {
+        #echo $line . "<br>";
+        if (str_contains($line, "Reply from $addr: bytes=32 time")) {
             $up = 1;
             break;
         }

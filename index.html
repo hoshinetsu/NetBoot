@@ -97,19 +97,20 @@
                 <form action="javascript:void(0)" method="post" class="th-form p-3">
                     <div class="input-group mt-1">
                         <label for="user" class="input-group-text">Your name (yes the 'cutified' one)</label>
-                        <input type="text" id="user" class="form-control" autofocus oninput="storeField(this.id)">
+                        <input type="text" required id="user" class="form-control" autofocus
+                            onchange="storeField(this.id)">
                     </div>
                     <div class="input-group mt-1">
                         <label for="pass" class="input-group-text">Password (in meow language)</label>
-                        <input type="password" id="pass" class="form-control" oninput="storeField(this.id)">
+                        <input type="password" required id="pass" class="form-control" onchange="storeField(this.id)">
                         <div class="input-group-append">
                             <label class="input-group-text th-ptr">
                                 <input class="th-ptr" type="checkbox" id="hide" checked
-                                    onchange="toggleKey()">&nbsp;Hide </label>
+                                    onchange="toggleKey()">&nbsp;Hide</label>
                         </div>
                     </div>
                     <div class="mt-3 text-center">
-                        <input type="submit" class="btn btn-success" value="Wake that Chungus!">
+                        <input type="submit" class="btn btn-success" value="Wake that Chungus!" id="wake" disabled>
                     </div>
                 </form>
             </div>
@@ -138,8 +139,20 @@
 
         function storeField(name) {
             let value = getId(name).value;
-            if (value != null && value.trim().length > 0)
-                setLs(name, value);
+
+            let allFilled = true;
+            document.querySelectorAll("[required]").forEach(function (v, k) {
+                if (allFilled && v.value != null && v.value.trim().length > 0) {
+                    setLs(v.id, v.value);
+                } else {
+                    allFilled = false;
+                }
+            });
+
+            if (allFilled)
+                getId("wake").removeAttribute("disabled");
+            else
+                getId("wake").setAttribute("disabled");
         }
 
         function restoreSaved() {
