@@ -10,7 +10,7 @@
     <!-- kuba hasioku spasiony w dupe se tego burpa wsadz! -->
     <link rel="stylesheet" href="lib/bootstrap.min.css">
     <link rel="shortcut icon" href="/favicon.ico">
-    <title>netboot ver. c1.2 | emc</title>
+    <title>netboot ver. c1.3 | emc</title>
     <style>
         /* custom bootstrap theme here 'cause who needs sass */
         @keyframes bodybgcolor {
@@ -47,7 +47,8 @@
             color: #44AA00;
         }
 
-        header {
+        header,
+        .modal-header {
             border-bottom: 2px solid #005500;
         }
 
@@ -55,7 +56,8 @@
             border-top: 2px solid #005500;
         }
 
-        main {
+        main,
+        .th-modal {
             border: 2px solid #005500;
             background-color: #111;
         }
@@ -84,7 +86,9 @@
         }
 
         .status-log {
-            color: #ccc;
+            color: #aaa;
+            margin-top: -0.8rem;
+            font-size: 0.8rem;
         }
 
         .status-red {
@@ -97,6 +101,10 @@
             color: #44AA00;
             font-size: 1.15rem;
             font-weight: bold;
+        }
+
+        .modal-title {
+            font-size: 1rem;
         }
     </style>
 </head>
@@ -143,17 +151,19 @@
     </main>
     <div class="modal fade" id="actionModal" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content th-modal">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="actionModalLabel">Waking up the Chungus</h1>
+                    <h5 class="modal-title" id="actionModalLabel">Waking up the Chungus</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" id="actionModalClose"
                         disabled></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-center my-0">
-                        <img src="img/oia-uia.gif" alt="uiia" id="progress">
-                    </p>
-                    <p class="text-center my-0" id="status"></p>
+                    <div class="text-center" id="progress">
+                        <p class="my-0 th-statusTitle">This usually takes ~30 seconds. Please allow up to a minute.</p>
+                        <img src="img/oia-uia.gif" alt="uiia" width="80%">
+                        <p class="my-0" id="status"></p>
+                    </div>
+                    <p class="text-center my-0" id="result"></p>
                 </div>
             </div>
         </div>
@@ -217,71 +227,12 @@
             }
         }
 
+        /* 
+            constant values for communication with backend 
+            defining what the request should do
+        */ 
         const REQ_PING = 10;
         const REQ_WAKE = 11;
-
-        function setStatusColor(stat, color) {
-            let status = getId("status");
-            status.innerHTML = status.innerHTML + `<span class="status-${color}">` + stat + "</span><br>";
-        }
-
-        function setStatus(stat) {
-            setStatusColor(stat, "log");
-        }
-
-        function hideProgress() {
-            getId("progress").setAttribute("style", "display:none");
-            getId("actionModalClose").removeAttribute("disabled");
-        }
-
-        function showProgress() {
-            getId("status").textContent = "";
-            getId("progress").removeAttribute("style");
-            getId("actionModalClose").setAttribute("disabled", "da");
-        }
-
-        function interpretError(q, ans) {
-            hideProgress();
-            setStatusColor("error: " + ans, "red");
-        }
-
-        function interpretResponse(q, ans, recurrence) {
-            console.log("Recurrence depth: ", recurrence);
-            if (recurrence > 5) {
-                setStatus("Abortion!");
-                interpretError(0, "too many failed attempts");
-                return;
-            }
-            switch (q) {
-                case REQ_PING: {
-                    let isUp = Number.parseInt(ans) == 1;
-                    setStatus("chungus is " + (isUp ? "UP" : "DOWN"));
-                    if (isUp) {
-                        hideProgress();
-                        setStatusColor("The PC is up on the network. Try parsecing!", "green");
-                    } else {
-                        sendRequest(REQ_WAKE, ++recurrence);
-                    }
-                    break;
-                }
-                case REQ_WAKE: {
-                    let wolSent = Number.parseInt(ans) == 1;
-                    setStatus("Magic Packet has been" + (wolSent ? " " : " NOT ") + "sent.");
-                    if (wolSent) {
-                        setStatus("Waiting 10 seconds for the PC to come online..");
-                        setTimeout(function () {
-                            sendRequest(REQ_PING, recurrence);
-                        }, 10000);
-                    } else {
-                        setStatus("Send failed. Contact your donkey admin!");
-                    }
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
-        }
 
         function sendRequest(q, recurrence = 0) {
             let user = getId("user").value;
@@ -319,6 +270,77 @@
             }
         }
 
+        function showProgress() {
+            getId("status").textContent = "";
+            getId("result").textContent = "";
+            getId("progress").removeAttribute("style");
+            getId("actionModalClose").setAttribute("disabled", "da");
+        }
+
+        function hideProgress() {
+            getId("progress").setAttribute("style", "display:none");
+            getId("actionModalClose").removeAttribute("disabled");
+        }
+
+        function setResult(stat, success) {
+            let status = getId("result");
+            let happySad = success ? "happy" : "sad";
+            /* 
+                Happysad mentioned!! RAAAH!
+                https://open.spotify.com/track/6LuOCaMHFBfaR1MLKNHhMA?si=89bc342b9c534ade
+            */
+            hideProgress();
+            status.innerHTML = `<img src="img/cat-${happySad}.gif" alt="${happySad} cat" width="80%"><br>`
+                + `<span class="status-${success ? "green" : "red"}">` + stat + "</span><br>";
+        }
+
+        function setStatus(stat) {
+            let status = getId("status");
+            status.innerHTML = status.innerHTML + `<span class="status-log">` + stat + "</span><br>";
+        }
+
+        function interpretError(q, ans) {
+            setResult("error: " + ans, false);
+        }
+
+        function interpretResponse(q, ans, recurrence) {
+            console.log("Recurrence depth: ", recurrence);
+            if (recurrence > 5) {
+                interpretError(0, "aborted - too many failed attempts");
+                return;
+            }
+            switch (q) {
+                case REQ_PING: {
+                    let isUp = Number.parseInt(ans) == 1;
+                    setStatus("chungus is " + (isUp ? "UP" : "DOWN"));
+                    if (isUp) {
+                        setResult("The PC is up on the network. Try&nbsp;parsecing!", true);
+                    } else {
+                        sendRequest(REQ_WAKE, ++recurrence);
+                    }
+                    break;
+                }
+                case REQ_WAKE: {
+                    let wolSent = Number.parseInt(ans) == 1;
+                    setStatus("Magic Packet has been" + (wolSent ? " " : " NOT ") + "sent.");
+                    if (wolSent) {
+                        let timeout = 10;
+                        setStatus(`Waiting ${timeout} seconds for the PC to come online..`);
+                        setTimeout(function () {
+                            sendRequest(REQ_PING, recurrence);
+                        }, timeout * 1000);
+                    } else {
+                        interpretError(0, "Send failed. Contact your donkey admin!");
+                    }
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+
+        /* invoked when the form is sent */
         function parseForm() {
             showProgress();
             var myModal = new bootstrap.Modal(document.getElementById('actionModal'));
@@ -326,6 +348,7 @@
             sendRequest(REQ_PING);
         }
 
+        /* invoked when page finishes loading */
         function init() {
             console.log("finished loading.");
             restoreSaved();
