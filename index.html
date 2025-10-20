@@ -6,11 +6,11 @@
     <meta name="robots" content="noindex, nofollow, noimageindex, nosnippet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="hoshinetsu">
-    <meta name="description" content="yet another remote pc wakeup tool. coded for Emcheratti (=`ω´=)">
+    <meta name="description" content="amazing remote pc wakeup tool. coded for Emcheratti (=`ω´=)">
     <!-- kuba hasioku spasiony w dupe se tego burpa wsadz! -->
     <link rel="stylesheet" href="lib/bootstrap.min.css">
     <link rel="shortcut icon" href="/favicon.ico">
-    <title>netboot ver. 1.4 | em4e</title>
+    <title>wakey ver. 251020 | em4e</title>
     <style>
         /* custom bootstrap theme here 'cause who needs sass */
         @keyframes bodybgcolor {
@@ -112,8 +112,8 @@
 <body data-bs-theme="dark" class="vh-100 d-flex flex-column justify-content-start" onload="init()">
     <header class="d-flex flex-row justify-content-center mb-5 pt-3 pb-1">
         <div>
-            <h2 class="th-header-top text-center mb-0">Wake That Chungus</h2>
-            <h4 class="th-fit th-header-bot mx-auto">like it's 09:11</h4>
+            <h2 class="th-header-top text-center mb-0">| Wakey Pisi Wakey |</h2>
+              <h4 class="th-fit th-header-bot mx-auto">time for gaeming</h4>
         </div>
     </header>
     <main class="container p-3">
@@ -138,17 +138,20 @@
                     </div>
                     <div class="mt-3 text-center">
                         <input type="reset" class="btn btn-outline-danger mx-1" value="Clear" id="clear">
-                        <input type="submit" class="btn btn-success mx-1" value="Wake that Chungus!" id="wake" disabled>
+                        <input type="submit" class="btn btn-success mx-1" value="Wake that Pisi ayy!" id="wake" disabled>
                     </div>
                 </form>
             </div>
         </div>
         <div class="row justify-content-center mt-2">
             <div class="col-xs-12 col-lg-8 col-xl-6">
-                <p class="text-left">Last updated on <b class="text-success">25.09.2025</b><br>
-                Patch notes: <i>fixed 404-GeorgeNotFound error &amp; fixed waking up from S5 power state, restored old UI text</i></p>
-                <p class="text-left">Updated on <b class="text-success">24.08.2025</b><br>
-                Patch notes: <i>adjusted the app for recent network topology changes, allowed for greater waiting times minding potential windows updates, UI glitch fixes</i></p>
+                <p class="text-left">Last updated on <b class="text-success">20.10.2025</b><br> Patch notes: <i>the app
+                        returns with new API and pisi wakeup technologia 👌🏿 (might be faster too!)</i></p>
+                <p class="text-left">Updated on <b class="text-success">25.09.2025</b><br> Patch notes: <i>fixed
+                        404-GeorgeNotFound error &amp; fixed waking up from S5 power state, restored old UI text</i></p>
+                <p class="text-left">Updated on <b class="text-success">24.08.2025</b><br> Patch notes: <i>adjusted the
+                        app for recent network topology changes, allowed for greater waiting times minding potential
+                        windows updates, UI glitch fixes</i></p>
             </div>
         </div>
     </main>
@@ -156,17 +159,16 @@
         <div class="modal-dialog">
             <div class="modal-content th-modal">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="actionModalLabel">Waking up the Chungus</h5>
+                    <h5 class="modal-title" id="actionModalLabel">Waking up the Pisi</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" id="actionModalClose"
                         disabled></button>
                 </div>
                 <div class="modal-body">
                     <div class="text-center" id="progress">
-                        <p class="my-0 th-statusTitle">Waking up might take all the way from 10 seconds up to about a
-                            minute, depending whether the PC is in <b>SLEEP</b> state or completely <b>OFF</b>. Any
-                            pending updates to Windows might affect the wait time as well. If the process takes more
-                            than 5 minutes, contact yer n*gg <code>:#3</code></p>
-                        <img src="img/oia-uia.gif" alt="uiia" width="80%">
+                        <p class="my-0 th-statusTitle">Let me cook 😊 I won't keep you here for more than 3 minutes. If
+                            the process times out without any other errors, Windows updates may be to blame. Wait a
+                            little and try again. If the problem persists <s>beat</s> hit up the nig.</p>
+                        <img src="img/oia-uia.gif" alt="uiia" width="60%">
                         <p class="my-0" id="status"></p>
                     </div>
                     <p class="text-center my-0" id="result"></p>
@@ -232,55 +234,110 @@
                 pass.setAttribute("type", "text");
             }
         }
-
         /* 
             constant values for communication with backend 
             defining what the request should do
         */
-        const REQ_PING = 10;
-        const REQ_WAKE = 11;
+        const REQ_PING = { "id": 10, "desc": "ping" };
+        const REQ_WAKE = { "id": 11, "desc": "wake" };
+        const REQ_PDON = { "id": 20, "desc": "powerup" };
+        let powerUpSent,
+            resultShown,
+            wakeSent;
 
-        function sendRequest(q, recurrence = 0) {
+        function newSendRequest(type, callStack = 0) {
+            if (++callStack > 50) {
+                resultError("attempt timed out");
+                return;
+            }
             let user = getId("user").value;
             let pass = getId("pass").value;
-
-            let xhr = new XMLHttpRequest();
-            xhr.open("GET", `api/auth.php?user=${user}&pass=${pass}&q=${q}`, true);
-            xhr.onreadystatechange = function () {
-                if (this.readyState == 4) {
-                    if (this.status != 200) {
-                        interpretError(q, "");
+            fetch(`api/v2/wake.php?user=${user}&pass=${pass}&q=${type.id}`)
+                .then(response => {
+                    if (response) {
+                        return response.json();
+                    }
+                    resultError(`server returned "${response.status}"`);
+                })
+                .then(data => {
+                    // updateLog(`got response: ${JSON.stringify(data)}`);
+                    if (data.error) {
+                        resultError(`API returned "${data.error}"`);
                         return;
                     }
-                    let ans = xhr.responseText;
-                    if (ans.includes("<out>")) {
-                        interpretResponse(q, ans.slice(ans.indexOf("<out>") + 5, ans.indexOf("</out>")), recurrence);
-                    } else if (ans.includes("<err>")) {
-                        interpretError(q, ans.slice(ans.indexOf("<err>") + 5, ans.indexOf("</err>")));
-                    } else {
-                        interpretError(q, "server error");
+                    switch (type.id) {
+                        case REQ_PING.id: {
+                            if (data.isUp) {
+                                setResult("The pisi is up on the network, go parsec!");
+                                break;
+                            }
+                            if (wakeSent) {
+                                let timeout = 3;
+                                updateLog(`waiting ${timeout} seconds for next probe..`);
+                                setTimeout(function () {
+                                    newSendRequest(REQ_PING, callStack);
+                                    updateLog(`checking if pisi is on..`);
+                                }, timeout * 1000);
+                                break;
+                            }
+                            if (powerUpSent) {
+                                newSendRequest(REQ_WAKE, callStack);
+                                updateLog("the pisi is powered, sending wake..");
+                                break;
+                            }
+                            newSendRequest(REQ_PDON, callStack);
+                            updateLog("the pisi is down, making sure it's powered..");
+                            break;
+                        }
+                        case REQ_WAKE.id: {
+                            if (data.magicSent) {
+                                wakeSent = true;
+                                let timeout = 10;
+                                updateLog(`waiting ${timeout} seconds for wakeup..`);
+                                setTimeout(function () {
+                                    newSendRequest(REQ_PING, callStack);
+                                    updateLog(`checking if pisi is on..`);
+                                }, timeout * 1000);
+                                break;
+                            }
+                            resultError("unable to send wake command");
+                            break;
+                        }
+                        case REQ_PDON.id: {
+                            powerUpSent = true;
+                            $str = ", attempting wakeup..";
+                            if (data.poweredUp) {
+                                updateLog(`the pisi is powered${$str}`);
+                            } else {
+                                updateLog(`request to PDU failed${$str}`);
+                            }
+                            newSendRequest(REQ_WAKE, callStack);
+                            break;
+                        }
+                        default: {
+                            resultError("wtf, sent unknown request");
+                            break;
+                        }
                     }
-                }
-            }
-            xhr.send();
-            switch (q) {
-                case REQ_PING: {
-                    setStatus("pinging the chungus..");
-                    break;
-                }
-                case REQ_WAKE: {
-                    setStatus("waking up the chungus..");
-                    break;
-                }
-                default: break;
-            }
+                })
+                .catch(error => {
+                    resultError(error);
+                });
         }
 
         function showProgress() {
+            powerUpSent = false;
+            resultShown = false;
+            wakeSent = false;
             getId("status").textContent = "";
             getId("result").textContent = "";
             getId("progress").removeAttribute("style");
             getId("actionModalClose").setAttribute("disabled", "da");
+            var myModal = new bootstrap.Modal(document.getElementById('actionModal'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+            myModal.show();
         }
 
         function hideProgress() {
@@ -288,7 +345,9 @@
             getId("actionModalClose").removeAttribute("disabled");
         }
 
-        function setResult(stat, success) {
+        function setResult(stat, success = true) {
+            if (resultShown) return;
+            resultShown = true;
             let status = getId("result");
             let happySad = success ? "happy" : "sad";
             /* 
@@ -300,67 +359,25 @@
                 + `<span class="status-${success ? "green" : "red"}">` + stat + "</span><br>";
         }
 
-        function setStatus(stat) {
-            let status = getId("status");
-            status.innerHTML = status.innerHTML + `<span class="status-log">` + stat + "</span><br>";
-        }
-
-        function interpretError(q, ans) {
+        function resultError(ans) {
             setResult("error: " + ans, false);
         }
 
-        function interpretResponse(q, ans, recurrence) {
-            console.log("Recurrence depth: ", recurrence);
-            if (recurrence > 30) {
-                interpretError(0, "aborted - too many failed attempts");
-                return;
-            }
-            switch (q) {
-                case REQ_PING: {
-                    let isUp = Number.parseInt(ans) == 1;
-                    setStatus("chungus is " + (isUp ? "UP" : "DOWN"));
-                    if (isUp) {
-                        setResult("The PC is up on the network. Try&nbsp;parsecing!", true);
-                    } else {
-                        sendRequest(REQ_WAKE, ++recurrence);
-                    }
-                    break;
-                }
-                case REQ_WAKE: {
-                    let wolSent = Number.parseInt(ans) == 1;
-                    setStatus("Magic Packet has been" + (wolSent ? " " : " NOT ") + "sent.");
-                    if (wolSent) {
-                        let timeout = 10;
-                        setStatus(`Waiting ${timeout} seconds for the PC to come online..`);
-                        setTimeout(function () {
-                            sendRequest(REQ_PING, recurrence);
-                        }, timeout * 1000);
-                    } else {
-                        interpretError(0, "Send failed. Contact your donkey admin!");
-                    }
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
+        function updateLog(stat) {
+            let status = getId("status");
+            status.innerHTML = status.innerHTML + `<span class="status-log">` + stat + "</span><br>";
         }
 
         /* invoked when the form is sent */
         function parseForm() {
             showProgress();
-            var myModal = new bootstrap.Modal(document.getElementById('actionModal'), {
-                backdrop: 'static',
-                keyboard: false
-            });
-            myModal.show();
-            sendRequest(REQ_PING);
+            newSendRequest(REQ_PING);
         }
 
         /* invoked when page finishes loading */
         function init() {
-            console.log("finished loading.");
             restoreSaved();
+            console.log("finished loading.");
         }
     </script>
     <script src="lib/bootstrap.bundle.min.js"></script>
