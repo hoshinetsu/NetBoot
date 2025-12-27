@@ -60,6 +60,7 @@ final class WakeAPI
     private static function testUp()
     {
         global $response;
+        # >CONFIG: IP address of the PC
         $addr = "172.31.69.185";
         if (stripos(PHP_OS, 'WIN') === 0) {
             $cmd = "ping -n 1 -w 100 $addr";
@@ -75,6 +76,7 @@ final class WakeAPI
     private static function wakeUp()
     {
         global $response;
+        # >CONFIG: Wake on lan command, executing the provided Windows WOL binary
         $cmd = "wakeonlan 50EBF62F842C 2>&1";
         $cond = "packet";
         $response->magicSent = self::executeCommand($cmd, $cond);
@@ -84,6 +86,7 @@ final class WakeAPI
     private static function powerUp()
     {
         global $response;
+        # >CONFIG: Address of the Shelly smart plug
         $url = "http://desk-pdu.muffin.ntt/rpc/Switch.Set?id=0&on=true";
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -111,6 +114,7 @@ final class WakeAPI
         $pass = strtolower(trim($_GET['pass']));
         $response->type = intval(trim($_GET['q']));
         self::dbgFlag("parse");
+        # >CONFIG: User credentials
         if ($user === "admin" && $pass === "wakey") {
             self::dbgFlag("authPass");
             switch ($response->type) {
